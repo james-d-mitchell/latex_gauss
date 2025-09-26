@@ -1,19 +1,28 @@
 from sympy import Matrix, latex
 from fractions import Fraction
+import re
 
 
-def string_ero3(B: Matrix, row: int, pivot_row: int, scalar: Fraction) -> None:
+def latex_scalar(scalar: Fraction) -> str:
+    if scalar.denominator != 1:
+        if scalar.numerator < 0:
+            return f"-\\tfrac{{{-scalar.numerator}}}{{{scalar.denominator}}}"
+        return f"\\tfrac{{{scalar.numerator}}}{{{scalar.denominator}}}"
+    return f"{scalar}"
+
+
+def latex_ero3(B: Matrix, row: int, pivot_row: int, scalar: Fraction) -> None:
     if scalar < 0:
         if scalar == -1:
             scalar = "+ "
         else:
-            scalar = f"+ {-scalar}"
+            scalar = f"+ {latex_scalar(-scalar)}"
     else:
         if scalar == 1:
             scalar = "- "
         else:
-            scalar = f"- {scalar}"
-    return f"& \\sim {latex(B)} && r_{row + 1} \\rightarrow r_{row + 1} {scalar}r_{pivot_row + 1}\\\\"
+            scalar = f"- {latex_scalar(scalar)}"
+    return f"& \\sim {latex(B)} && r_{row + 1} \\rightarrow r_{row + 1} {scalar}r_{pivot_row + 1}\\\\\n"
 
 
 def row_echelon_form(A: Matrix) -> tuple[Matrix, str]:
@@ -26,7 +35,7 @@ def row_echelon_form(A: Matrix) -> tuple[Matrix, str]:
             for i in range(pivot_row + 1, r):
                 if B[i, pivot_col] != 0:
                     B.row_swap(pivot_row, i)
-                    result += f"& \\sim {latex(B)} && r_{pivot_row + 1} \\leftrightarrow r_{i + 1} \\\\"
+                    result += f"& \\sim {latex(B)} && r_{pivot_row + 1} \\leftrightarrow r_{i + 1} \\\\\n"
                     break
             else:
                 pivot_col += 1
@@ -40,7 +49,9 @@ def row_echelon_form(A: Matrix) -> tuple[Matrix, str]:
                 scalar = Fraction(B[i, pivot_col], pivot)
                 for j in range(pivot_col, c):
                     B[i, j] -= scalar * B[pivot_row, j]
-                result += string_ero3(B, i, pivot_row, scalar)
+                result += latex_ero3(B, i, pivot_row, scalar)
+    result = re.sub(r"\\left\[\\begin{matrix}", r"\\begin{bmatrix}", result)
+    result = re.sub(r"\\end{matrix}\\right]", r"\\end{bmatrix}", result)
     return (B, result)
 
 
@@ -58,16 +69,17 @@ def reduced_row_echelon_form(A: Matrix) -> tuple[Matrix, str]:
                 if pivot == -1:
                     scalar = "-"
                 else:
-                    scalar = Fraction(1, pivot)
-                result += f"& \\sim {latex(B)} && r_{pivot_row + 1} \\rightarrow {scalar}r_{pivot_row + 1}\\\\"
+                    scalar = latex_scalar(Fraction(1, pivot))
+                result += f"& \\sim {latex(B)} && r_{pivot_row + 1} \\rightarrow {scalar}r_{pivot_row + 1}\\\\\n"
 
             for i in range(pivot_row - 1, -1, -1):
                 scalar = B[i, pivot_col]
                 if scalar != 0:
                     for j in range(pivot_col, c):
                         B[i, j] -= B[pivot_row, j] * scalar
-                    result += string_ero3(B, i, pivot_row, scalar)
+                    result += latex_ero3(B, i, pivot_row, scalar)
 
             break
-
+    result = re.sub(r"\\left\[\\begin{matrix}", r"\\begin{bmatrix}", result)
+    result = re.sub(r"\\end{matrix}\\right]", r"\\end{bmatrix}", result)
     return (B, result)
