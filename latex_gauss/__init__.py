@@ -1,0 +1,73 @@
+from sympy import Matrix, latex
+from fractions import Fraction
+
+
+def string_ero3(B: Matrix, row: int, pivot_row: int, scalar: Fraction) -> None:
+    if scalar < 0:
+        if scalar == -1:
+            scalar = "+ "
+        else:
+            scalar = f"+ {-scalar}"
+    else:
+        if scalar == 1:
+            scalar = "- "
+        else:
+            scalar = f"- {scalar}"
+    return f"& \\sim {latex(B)} && r_{row + 1} \\rightarrow r_{row + 1} {scalar}r_{pivot_row + 1}\\\\"
+
+
+def row_echelon_form(A: Matrix) -> tuple[Matrix, str]:
+    B = A.copy()
+    r, c = B.shape
+    pivot_col = 0
+    result = latex(B)
+    for pivot_row in range(r):
+        while pivot_col < c and B[pivot_row, pivot_col] == 0:
+            for i in range(pivot_row + 1, r):
+                if B[i, pivot_col] != 0:
+                    B.row_swap(pivot_row, i)
+                    result += f"& \\sim {latex(B)} && r_{pivot_row + 1} \\leftrightarrow r_{i + 1} \\\\"
+                    break
+            else:
+                pivot_col += 1
+        if pivot_col == c:
+            return B
+        pivot = B[pivot_row, pivot_col]
+        if pivot == 0:
+            return B
+        for i in range(pivot_row + 1, r):
+            if B[i, pivot_col] != 0:
+                scalar = Fraction(B[i, pivot_col], pivot)
+                for j in range(pivot_col, c):
+                    B[i, j] -= scalar * B[pivot_row, j]
+                result += string_ero3(B, i, pivot_row, scalar)
+    return (B, result)
+
+
+def reduced_row_echelon_form(A: Matrix) -> tuple[Matrix, str]:
+    B, result = row_echelon_form(A)
+    r, c = B.shape
+    for pivot_row in range(r - 1, -1, -1):
+        for pivot_col in range(0, c):
+            pivot = B[pivot_row, pivot_col]
+            if pivot == 0:
+                continue
+            for i in range(pivot_col, c):
+                B[pivot_row, i] *= Fraction(1, pivot)
+            if pivot != 1:
+                if pivot == -1:
+                    scalar = "-"
+                else:
+                    scalar = Fraction(1, pivot)
+                result += f"& \\sim {latex(B)} && r_{pivot_row + 1} \\rightarrow {scalar}r_{pivot_row + 1}\\\\"
+
+            for i in range(pivot_row - 1, -1, -1):
+                scalar = B[i, pivot_col]
+                if scalar != 0:
+                    for j in range(pivot_col, c):
+                        B[i, j] -= B[pivot_row, j] * scalar
+                    result += string_ero3(B, i, pivot_row, scalar)
+
+            break
+
+    return (B, result)
