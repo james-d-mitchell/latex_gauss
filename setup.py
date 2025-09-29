@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="latex_gauss",
-    version="0.0.1",
+    version="0.1.0",
     description="Package for producing the latex of Gaussian elimination",
     url="http://github.com/james-d-mitchell/latex_gauss",
     author="James D. Mitchell",
