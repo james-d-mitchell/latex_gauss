@@ -62,7 +62,7 @@ def row_echelon_form(
 def reduced_row_echelon_form(
     A: Matrix, begin_matrix: str = r"\\begin{bmatrix}", end_matrix=r"\\end{bmatrix}"
 ) -> tuple[Matrix, str]:
-    B, result = row_echelon_form(A)
+    B, result = row_echelon_form(A, begin_matrix, end_matrix)
     r, c = B.shape
     for pivot_row in range(r - 1, -1, -1):
         for pivot_col in range(0, c):
