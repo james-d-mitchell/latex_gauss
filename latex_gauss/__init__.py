@@ -44,10 +44,10 @@ def row_echelon_form(
             else:
                 pivot_col += 1
         if pivot_col == c:
-            return B
+            return (B, result)
         pivot = B[pivot_row, pivot_col]
         if pivot == 0:
-            return B
+            return (B, result)
         for i in range(pivot_row + 1, r):
             if B[i, pivot_col] != 0:
                 scalar = Fraction(B[i, pivot_col], pivot)
